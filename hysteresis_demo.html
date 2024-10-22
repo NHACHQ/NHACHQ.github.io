@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Ambiguity in category boundaries</title>
+    <script src="jspsych-6.1.0/jspsych.js"></script>
+    <script src="jspsych-6.1.0/plugins/jspsych-html-keyboard-response.js"></script>
+    <script src="jspsych-6.1.0/plugins/jspsych-image-keyboard-response.js"></script>
+    <script src="jspsych-6.1.0/plugins/jspsych-animation.js"></script>
+    <script src="jspsych-6.1.0/plugins/jspsych-animation-feedback.js"></script>
+    <script src="jspsych-6.1.0/plugins/jspsych-html-button-response.js"></script>
+    <script src="jspsych-6.1.0/plugins/jspsych-external-html.js"></script>
+    <script src="jspsych-6.1.0/plugins/jspsych-animation.js"></script>
+    <script src="jspsych-6.1.0/plugins/jspsych-fullscreen.js"></script>
+    <script src="jspsych-6.3.0/plugins/jspsych-categorize-image.js"></script>
+    <script src="jspsych-6.3.0/plugins/jspsych-image-keyboard-response.js"></script>
+    <script src="utils.js"></script>
+    <link href="jspsych-6.1.0/css/jspsych.css" rel="stylesheet" type="text/css"></link>
+
+
+​
+  </head>
+​
+
+​  <body style="background-color:#a6a6a6;"></body>
+
+
+  <script>
+
+    /* create timeline */
+    var timeline = [];
+
+    /* define welcome message trial */
+    var welcome = {
+      type: "html-keyboard-response",
+      stimulus: "<p>Welcome to the experiment demo for hysteresis in scene categorization.</p>"+
+      " <p> This demo includes Experiment 1 smooth trials, Experiment 2 endpoint preview trials, and abrupt trials."+
+      "<p>Press any key to see example trials.</p>",
+    };
+    timeline.push(welcome);
+
+    /* define instructions trial */
+
+    var instructions_exp1 = {
+      type: "html-keyboard-response",
+      stimulus: "<h1> Instuctions of Experiment 1 smooth trials </h1>"+
+      "<p>In each trial, a sequence of images of indoor scenes will appear at the center of the screen.</p> " +
+          "<p>You will be presented with a scene, which will GRADUALLY change from one category to another."+
+          " Please press the SPACE BAR as  soon as you detect the change in category. You will see a notice RESPONSE RECORDED below the image after a succesful response.</p>" +
+          "<p> Only your first response for each image sequence will be recorded. </p>"+
+          "<p>Now please press the SPACE BAR when you are ready to begin the 3 demo trials.</p>",
+      post_trial_gap: 1000,
+      choices: ['space']
+    };
+
+    var instructions_abrupt = {
+      type: "html-keyboard-response",
+      stimulus: "<h1> Instuctions of abrupt trials </h1>"+
+      "<p>In each trial, a sequence of images of indoor scenes will appear at the center of the screen.</p> " +
+          "<p>You will be presented with a scene, which will SUDDENLY change from one category to another."+
+          " Please press the SPACE BAR as soon as you detect the change in category. You will see a notice RESPONSE RECORDED below the image after a succesful response.</p>" +
+          "<p> Only your first response for each image sequence will be recorded.</p>"+
+          "<p>Now please press the SPACE BAR when you are ready to begin the 2 demo trials`.</p>",
+      post_trial_gap: 1000,
+      choices: ['space']
+    };
+
+    var instructions_exp2 = {
+      type: "html-keyboard-response",
+      stimulus: "<h1> Instuctions of Experiment 2 endpoint preview trials </h1>"+
+      "<p>In each trial, a sequence of images of indoor scenes will appear at the center of the screen. </p>" +
+          "<p>You will be presented with a scene, which will GRADUALLY change from one category to another."+
+          " Please press the SPACE BAR as soon as you detect the change in terms of category. You will see a notice RESPONSE RECORDED below the image after a succesful response.</p>" +
+          "<p> For some of the trials, you will know the starting and ending category of the transition in advance. You may see hints in the format of words, images, or both.</p>"+
+          "<p> Now please press the SPACE BAR when you are ready to begin the 4 demo trials.</p>",
+      post_trial_gap: 1000,
+      choices: ['space']
+    };
+
+
+    /*   stimuli  */
+
+    //generate arrays of images
+    var paths = [];
+    var test_stimuli = [];
+    var boundaries = [[85.0, 178.0, 315.0]];
+
+
+    var c=0;
+    var deviation;
+    for(var i = 0; i<1; i++){
+
+        deviation = [-45,45];
+
+
+        var a = boundaries[0][0];
+        var b2l = imgSelect(deviation[0]+boundaries[i][0], deviation[1]+boundaries[i][0], 3, "stimuli/"+i);
+        test_stimuli.push({ stimulus: b2l[0], data: {trial_tag: c} });
+        test_stimuli.push({ stimulus: b2l[1], data: {trial_tag: c+'r'} });
+        c++;
+        var l2d = imgSelect(deviation[0]+boundaries[i][1], deviation[1]+boundaries[i][1], 3, "stimuli/"+i);
+        test_stimuli.push({ stimulus: l2d[0], data: {trial_tag: c} });
+        //test_stimuli.push({ stimulus: l2d[1], data: {trial_tag: c+'r'} });
+        c++;
+        var d2b = imgSelect(deviation[0]+boundaries[i][2], deviation[1]+boundaries[i][2], 3, "stimuli/"+i);
+        //test_stimuli.push({ stimulus: d2b[0], data: {trial_tag: c} });
+        //test_stimuli.push({ stimulus: d2b[1], data: {trial_tag: c+'r'} });
+        paths.push(b2l,l2d);
+    }
+
+    //abrupt trials
+    var abrupt_stimuli = [];
+    var temp;
+    var end;
+    for (var i = 0; i<1; i++){
+        end=2*i+1;
+        temp = abrupt_img('stimuli/abrupt/'+2*i+'.jpg','stimuli/abrupt/'+end+'.jpg', 10+2*i, 30 );
+        paths.push('stimuli/abrupt/'+2*i+'.jpg','stimuli/abrupt/'+end+'.jpg');
+        abrupt_stimuli.push({ stimulus: temp, data: {trial_tag: 'a'+i} });
+
+        temp = abrupt_img('stimuli/abrupt/'+end+'.jpg','stimuli/abrupt/'+2*i+'.jpg', 10+2*i, 30 );
+        abrupt_stimuli.push({ stimulus: temp, data: {trial_tag: 'ar'+i} });
+    }
+
+
+// set up practive stimuli for each exposure condition
+    var practice_stimuli =[];
+    var prac_boundaries = [[94.0, 175.0, 310.0],[88.0, 168.0, 328.0], [95.0, 188.0, 182.0]];
+    practice_stimuli[0] = null_exposure_timeVarGenerator('stimuli/practice/','practice-exposure-', paths, prac_boundaries, 0, 1, 3)[0];
+    practice_stimuli[1] = exposure_timeVarGenerator('stimuli/practice/','practice-exposure-', paths, prac_boundaries, 0, 1, 3)[2];
+    practice_stimuli[2] = exposure_word_only_timeVarGenerator('stimuli/practice/','practice-exposure-', paths, prac_boundaries, 1, 2, 3)[0];
+    practice_stimuli[3] = exposure_image_only_timeVarGenerator('stimuli/practice/','practice-exposure-', paths, prac_boundaries, 2, 3, 3)[0];
+
+
+
+
+    var test = {
+        //type: 'animation',
+        type: 'animation-feedback',
+        stimuli: jsPsych.timelineVariable('stimulus'),
+        frame_time: 200,
+        frame_isi: 300,
+        choices:['space'],
+        data: jsPsych.timelineVariable('data'),
+        post_trial_gap: 300,
+        prompt: '<p style="color:#a6a6a6;"> empty </p>',
+    }
+
+    var exposure = {
+        type: 'html-keyboard-response',
+        stimulus: jsPsych.timelineVariable('exposure'),
+        choices:jsPsych.NO_KEYS,
+        trial_duration: 2500
+    }
+
+
+    var gap = {
+      type: "html-keyboard-response",
+      stimulus: "<p> Feel free to take a break to relax your eyes.</p>"+
+      "<p> Please press the SPACE BAR when you are ready to begin the next trial. </p>",
+      post_trial_gap: 1000,
+      choices: ['space']
+    }
+
+    var fixation = {
+      type: 'html-keyboard-response',
+      stimulus: '<div style="font-size:60px;">+</div>'+
+                '<p style="color:#a6a6a6"> empty </p>',
+      choices: jsPsych.NO_KEYS,
+      trial_duration: 1000
+    }
+
+
+    var abrupt_procedure = {
+        timeline: [fixation,test],
+        timeline_variables:abrupt_stimuli,
+        randomize_order: true
+    }
+    var test_procedure = {
+      timeline: [fixation,test],
+      timeline_variables: test_stimuli,
+      randomize_order: true
+    }
+
+    var practice_exposure_procedure = {
+        timeline: [exposure,fixation, test],
+        timeline_variables: practice_stimuli,
+        randomize_order: true
+    }
+
+    var end_experiment = {
+        type: "html-keyboard-response",
+        stimulus: "<p> Thank you! </p> ",
+        post_trial_gap: 500,
+        choices: null
+    }
+
+    /* timeline arrangement*/
+
+
+    /* exp1 smooth */
+    timeline.push(instructions_exp1);
+    timeline.push(test_procedure);
+
+    /* exp2 exposure*/
+    timeline.push(instructions_exp2);
+    timeline.push(practice_exposure_procedure);
+
+    /* abrupt */
+    timeline.push(instructions_abrupt);
+    timeline.push(abrupt_procedure);
+    timeline.push(end_experiment);
+    /* start the experiment */
+    jsPsych.init({
+      timeline: timeline,
+      preload_images: paths
+    });
+  </script>
+  </html>
